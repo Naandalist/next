@@ -356,5 +356,27 @@ describe('src/object.js', function () {
             assert(res.baz.b.ad === 4);
             assert(res.baz.c === 's');
         });
+
+        it('should not pollute Object.prototype via __proto__', function () {
+            const malicious = JSON.parse('{"__proto__":{"polluted":true}}');
+            object.deepMerge({}, malicious);
+
+            assert.strictEqual(({} as { polluted?: boolean }).polluted, undefined);
+            assert.strictEqual(
+                Object.prototype.hasOwnProperty.call(Object.prototype, 'polluted'),
+                false
+            );
+        });
+
+        it('should ignore constructor.prototype payload', function () {
+            const malicious = JSON.parse('{"constructor":{"prototype":{"polluted2":true}}}');
+            object.deepMerge({}, malicious);
+
+            assert.strictEqual(({} as { polluted2?: boolean }).polluted2, undefined);
+            assert.strictEqual(
+                Object.prototype.hasOwnProperty.call(Object.prototype, 'polluted2'),
+                false
+            );
+        });
     });
 });

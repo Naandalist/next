@@ -303,6 +303,10 @@ export function deepMerge(
 
     if (isPlainObject(target) && isPlainObject(source)) {
         for (const key in source) {
+            // Skip keys that would pollute Object.prototype (CVE-2026-78180)
+            if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+                continue;
+            }
             // 如果是 object 进行深拷贝
             if (isPlainObject(source[key]) && !React.isValidElement(source[key])) {
                 if (!target[key]) Object.assign(target, { [key]: {} });
